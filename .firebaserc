@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "schedule-62efa"
+  },
+  "targets": {
+    "schedule-62efa": {
+      "hosting": {
+        "workwidget": [
+          "schedule-62efa-workwidget"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

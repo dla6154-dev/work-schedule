@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_day_item_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minHeight="82dp">
+
+    <LinearLayout
+        android:id="@+id/widget_day_item_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_cell_normal"
+        android:orientation="vertical"
+        android:padding="4dp">
+
+        <TextView
+            android:id="@+id/widget_day_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1"
+            android:textColor="#1E293B"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_shift_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:paddingStart="6dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="2dp"
+            android:text=""
+            android:textColor="#334155"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_note_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="3dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:text=""
+            android:textColor="#3730A3"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_note_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="1dp"
+            android:text=""
+            android:textColor="#94A3B8"
+            android:textSize="8sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_border_top"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="top"
+        android:background="#CBD5E1"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/widget_border_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="bottom"
+        android:background="#CBD5E1"
+        android:text=""
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_border_left"
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:background="#CBD5E1"
+        android:text=""
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_border_right"
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="right"
+        android:background="#CBD5E1"
+        android:text=""
+        android:visibility="gone" />
+
+</FrameLayout>

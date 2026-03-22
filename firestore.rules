@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    match /work-widgets/{workspaceId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+
+      match /state/{docId} {
+        allow read, write: if isSignedIn();
+      }
+    }
+
+    // Default: authenticated read, deny writes unless explicitly allowed above.
+    match /{document=**} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+  }
+}

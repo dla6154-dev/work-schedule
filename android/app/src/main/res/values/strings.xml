@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">근무편성</string>
+    <string name="title_activity_main">근무편성</string>
+    <string name="package_name">com.workschedule.widget</string>
+    <string name="custom_url_scheme">com.workschedule.widget</string>
+    <string name="work_schedule_widget_name">근무표 위젯</string>
+
+    <string name="widget_arrow_prev">&lt;</string>
+    <string name="widget_arrow_next">&gt;</string>
+    <string name="widget_weekday_sun">일</string>
+    <string name="widget_weekday_mon">월</string>
+    <string name="widget_weekday_tue">화</string>
+    <string name="widget_weekday_wed">수</string>
+    <string name="widget_weekday_thu">목</string>
+    <string name="widget_weekday_fri">금</string>
+    <string name="widget_weekday_sat">토</string>
+
+    <string name="widget_calendar_empty">표시할 일정이 없습니다.</string>
+    <string name="widget_today_schedule_title">오늘 일정</string>
+    <string name="widget_today_schedule_title_with_date">%1$s 일정</string>
+    <string name="widget_today_schedule_empty">등록된 일정이 없습니다.</string>
+</resources>

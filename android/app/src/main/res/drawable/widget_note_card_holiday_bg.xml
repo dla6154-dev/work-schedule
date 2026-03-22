@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    공휴일 카드 레이아웃:
+    레이어1 (하단): 장미색 액센트 바 — 전체 너비로 그리되 레이어2에 가려짐
+    레이어2 (상단): 카드 배경 — 왼쪽 3dp 오프셋으로 시작해 액센트 3dp만 노출
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 레이어1: 왼쪽 액센트 바 (장미색) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F43F5E" />
+            <corners
+                android:topLeftRadius="8dp"
+                android:bottomLeftRadius="8dp" />
+        </shape>
+    </item>
+
+    <!-- 레이어2: 카드 본체 (왼쪽 3dp부터 시작 → 액센트 3dp 노출) -->
+    <item android:left="3dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFF1F2" />
+            <corners
+                android:topRightRadius="8dp"
+                android:bottomRightRadius="8dp" />
+        </shape>
+    </item>
+
+</layer-list>

@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family:
+      'Pretendard',
+      'Apple SD Gothic Neo',
+      'Noto Sans KR',
+      'Malgun Gothic',
+      sans-serif;
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.main-scrollbar {
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.main-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.main-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.main-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+
+.main-scrollbar.is-scrolling {
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.main-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-sheet {
+  animation: sheet-in 0.22s ease-out;
+}

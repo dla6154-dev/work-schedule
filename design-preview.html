@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>디자인 미리보기</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif; }
+  .phone-frame { width: 304px; height: 620px; overflow: hidden; border-radius: 2rem; flex-shrink: 0; }
+  .scroll-inner { overflow-y: auto; height: 100%; scrollbar-width: none; }
+  .scroll-inner::-webkit-scrollbar { display: none; }
+  .designs-row { display: flex; gap: 2rem; overflow-x: auto; padding: 1rem 1.5rem 1.5rem; scroll-snap-type: x mandatory; }
+  .designs-row::-webkit-scrollbar { height: 6px; }
+  .designs-row::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 99px; }
+  .designs-row::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 99px; }
+  .design-card { scroll-snap-align: start; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+  .design-card h3 { font-size: 14px; font-weight: 800; text-align: center; color: #334155; margin: 0; }
+  .design-card p { font-size: 11px; color: #64748b; text-align: center; max-width: 300px; margin: 0; }
+  .apply-btn { padding: 9px 22px; border-radius: 999px; font-size: 13px; font-weight: 800; cursor: pointer; border: none; transition: all 0.2s; letter-spacing: -0.2px; }
+  .apply-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+  .selected-badge { background: #6366f1; color: white; padding: 3px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  /* cal cell */
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .cal-cell { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 3px 1px 3px; min-height: 42px; }
+  .cal-date { font-size: 10px; font-weight: 800; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .cal-tag { font-size: 7px; font-weight: 700; margin-top: 1px; border-radius: 3px; padding: 1px 3px; max-width: 28px; text-align: center; overflow: hidden; white-space: nowrap; }
+</style>
+</head>
+<body style="background:#f1f5f9; min-height:100vh;">
+
+<div style="max-width:1500px; margin:0 auto; padding:1.5rem 1rem 0.5rem;">
+  <!-- 상단 헤더 -->
+  <div style="text-align:center; margin-bottom:1.2rem;">
+    <h1 style="font-size:22px; font-weight:900; color:#1e293b; margin:0 0 5px;">🎨 디자인 미리보기</h1>
+    <p style="font-size:13px; color:#64748b; margin:0;">마음에 드는 디자인을 선택하면 앱에 적용할 수 있습니다</p>
+  </div>
+  <div style="text-align:center; margin-bottom:0.8rem;">
+    <span style="font-size:12px; color:#6366f1; font-weight:700;" id="selected-label">현재: 기본 디자인 적용 중</span>
+  </div>
+</div>
+
+<div class="designs-row" id="designs-row">
+
+  <!-- ① 현재 (기본) -->
+  <div class="design-card">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <h3>① 현재 디자인 (기본)</h3>
+      <span class="selected-badge" id="badge-0">현재</span>
+    </div>
+    <p>화이트 기반 · 소프트 인디고 포인트 · 둥근 카드</p>
+    <div class="phone-frame" style="box-shadow: 0 20px 60px rgba(0,0,0,0.15); border: 8px solid #1e293b;">
+      <div class="scroll-inner" style="background:#f8fafc;">
+        <!-- 헤더 -->
+        <div style="background:white; padding:14px 14px 10px; border-bottom:1px solid #f1f5f9;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-size:20px; font-weight:900; color:#1e293b;">근무표</div>
+              <div style="font-size:11px; font-weight:700; color:#6366f1; margin-top:2px;">임현우님, 반갑습니다.</div>
+              <div style="font-size:10px; color:#94a3b8;">목포센터 · 센터</div>
+            </div>
+            <div style="display:flex; gap:7px;">
+              <div style="width:34px; height:34px; background:#f1f5f9; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px;">⭐</div>
+              <div style="width:34px; height:34px; background:#6366f1; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px;">✏️</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; background:#f1f5f9; border-radius:12px; padding:5px 8px; margin-top:9px;">
+            <div style="font-size:16px; cursor:pointer; padding:3px 7px; color:#94a3b8;">‹</div>
+            <div style="font-size:13px; font-weight:900; color:#334155;">2026년 3월</div>
+            <div style="font-size:16px; cursor:pointer; padding:3px 7px; color:#94a3b8;">›</div>
+          </div>
+        </div>
+        <!-- 바디 -->
+        <div style="padding:10px 9px;">
+          <div style="border:1px solid #e2e8f0; border-radius:13px; overflow:hidden; background:white; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div class="cal-grid" style="border-bottom:1px solid #f1f5f9;" id="d0-weekdays"></div>
+            <div class="cal-grid" id="d0-cal"></div>
+          </div>
+          <div style="background:white; border-radius:13px; border:1px solid #e2e8f0; padding:11px; margin-top:9px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:10px; font-weight:700; color:#94a3b8; margin-bottom:5px;">TODAY · 3월 21일 토요일</div>
+            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+              <span style="background:#ede9fe; color:#7c3aed; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700;">조출A</span>
+              <span style="background:#f0fdf4; color:#16a34a; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700;">임현우</span>
+            </div>
+          </div>
+          <div style="margin-top:9px; display:flex; flex-direction:column; gap:6px;" id="d0-users"></div>
+        </div>
+      </div>
+    </div>
+    <button class="apply-btn" style="background:#6366f1; color:white;" onclick="selectDesign(0)">✓ 현재 적용 중</button>
+  </div>
+
+  <!-- ② 다크 모드 -->
+  <div class="design-card">
+    <h3>② 다크 모드</h3>
+    <p>딥 네이비 배경 · 바이올렛 네온 포인트 · 야간 작업 최적화</p>
+    <div class="phone-frame" style="box-shadow: 0 20px 60px rgba(99,102,241,0.35); border: 8px solid #0f0f1a;">
+      <div class="scroll-inner" style="background:#0f0f1a;">
+        <div style="background:#0f0f1a; padding:14px 14px 10px; border-bottom:1px solid #1e1e35;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-size:20px; font-weight:900; color:#e2e8f0;">근무표</div>
+              <div style="font-size:11px; font-weight:700; color:#a78bfa; margin-top:2px;">임현우님, 반갑습니다.</div>
+              <div style="font-size:10px; color:#7c7cad;">목포센터 · 센터</div>
+            </div>
+            <div style="display:flex; gap:7px;">
+              <div style="width:34px; height:34px; background:#1e1e35; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px;">⭐</div>
+              <div style="width:34px; height:34px; background:linear-gradient(135deg,#6366f1,#8b5cf6); border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px;">✏️</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; background:#1e1e35; border-radius:12px; padding:5px 8px; margin-top:9px;">
+            <div style="font-size:16px; cursor:pointer; padding:3px 7px; color:#7c7cad;">‹</div>
+            <div style="font-size:13px; font-weight:900; color:#e2e8f0;">2026년 3월</div>
+            <div style="font-size:16px; cursor:pointer; padding:3px 7px; color:#7c7cad;">›</div>
+          </div>
+        </div>
+        <div style="padding:10px 9px;">
+          <div style="border:1px solid #2d2d4e; border-radius:13px; overflow:hidden; background:#1a1a2e;">
+            <div class="cal-grid" style="border-bottom:1px solid #2d2d4e;" id="d1-weekdays"></div>
+            <div class="cal-grid" id="d1-cal"></div>
+          </div>
+          <div style="background:#1a1a2e; border-radius:13px; border:1px solid #2d2d4e; padding:11px; margin-top:9px;">
+            <div style="font-size:10px; font-weight:700; color:#4a4a7a; margin-bottom:5px;">TODAY · 3월 21일 토요일</div>
+            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+              <span style="background:rgba(139,92,246,0.2); color:#a78bfa; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700; border:1px solid rgba(139,92,246,0.3);">조출A</span>
+              <span style="background:rgba(52,211,153,0.15); color:#34d399; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700; border:1px solid rgba(52,211,153,0.2);">임현우</span>
+            </div>
+          </div>
+          <div style="margin-top:9px; display:flex; flex-direction:column; gap:6px;" id="d1-users"></div>
+        </div>
+      </div>
+    </div>
+    <button class="apply-btn" style="background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white;" onclick="selectDesign(1)">이 디자인 적용</button>
+  </div>
+
+  <!-- ③ 미니멀 클린 -->
+  <div class="design-card">
+    <h3>③ 미니멀 클린</h3>
+    <p>순백 배경 · 슬레이트 타이포 · 라인 중심 · 정돈된 느낌</p>
+    <div class="phone-frame" style="box-shadow: 0 20px 60px rgba(0,0,0,0.10); border: 8px solid #334155;">
+      <div class="scroll-inner" style="background:white;">
+        <div style="background:white; padding:18px 14px 8px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-size:22px; font-weight:900; color:#0f172a; letter-spacing:-0.5px;">근무표</div>
+              <div style="font-size:11px; color:#3b82f6; margin-top:1px; font-weight:600;">임현우 · 목포센터</div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <div style="width:32px; height:32px; border:1.5px solid #e2e8f0; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:15px;">⭐</div>
+              <div style="width:32px; height:32px; background:#0f172a; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:15px;">✏️</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-bottom:8px; border-bottom:2px solid #0f172a;">
+            <div style="font-size:14px; cursor:pointer; color:#94a3b8; padding:0 4px;">‹</div>
+            <div style="font-size:13px; font-weight:900; color:#0f172a; letter-spacing:-0.3px;">2026년 3월</div>
+            <div style="font-size:14px; cursor:pointer; color:#94a3b8; padding:0 4px;">›</div>
+          </div>
+        </div>
+        <div style="padding:8px 9px;">
+          <div style="border:1.5px solid #0f172a; border-radius:9px; overflow:hidden;">
+            <div class="cal-grid" style="border-bottom:1.5px solid #0f172a;" id="d2-weekdays"></div>
+            <div class="cal-grid" id="d2-cal"></div>
+          </div>
+          <div style="padding:11px 2px; border-bottom:1px solid #f1f5f9; margin-top:6px;">
+            <div style="font-size:9px; font-weight:900; color:#94a3b8; letter-spacing:1px; margin-bottom:5px;">TODAY · 3월 21일</div>
+            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+              <span style="background:#0f172a; color:white; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:700;">조출A</span>
+              <span style="background:#f1f5f9; color:#334155; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:700;">임현우</span>
+            </div>
+          </div>
+          <div style="margin-top:7px; display:flex; flex-direction:column; gap:4px;" id="d2-users"></div>
+        </div>
+      </div>
+    </div>
+    <button class="apply-btn" style="background:#0f172a; color:white;" onclick="selectDesign(2)">이 디자인 적용</button>
+  </div>
+
+  <!-- ④ 웜톤 카드 -->
+  <div class="design-card">
+    <h3>④ 웜톤 카드</h3>
+    <p>크림 베이지 배경 · 앰버/오렌지 포인트 · 따뜻하고 포근한 느낌</p>
+    <div class="phone-frame" style="box-shadow: 0 20px 60px rgba(251,146,60,0.25); border: 8px solid #92400e;">
+      <div class="scroll-inner" style="background:#fffbf5;">
+        <div style="background:#fff8ee; padding:14px 14px 10px; border-bottom:1px solid #fde8c4;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-size:20px; font-weight:900; color:#78350f;">근무표</div>
+              <div style="font-size:11px; font-weight:700; color:#d97706; margin-top:2px;">임현우님, 반갑습니다.</div>
+              <div style="font-size:10px; color:#b45309;">목포센터 · 센터</div>
+            </div>
+            <div style="display:flex; gap:7px;">
+              <div style="width:34px; height:34px; background:#fef3c7; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px;">⭐</div>
+              <div style="width:34px; height:34px; background:#f59e0b; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px;">✏️</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; background:#fef3c7; border-radius:12px; padding:5px 8px; margin-top:9px;">
+            <div style="font-size:16px; cursor:pointer; padding:3px 7px; color:#d97706;">‹</div>
+            <div style="font-size:13px; font-weight:900; color:#78350f;">2026년 3월</div>
+            <div style="font-size:16px; cursor:pointer; padding:3px 7px; color:#d97706;">›</div>
+          </div>
+        </div>
+        <div style="padding:10px 9px;">
+          <div style="background:white; border-radius:14px; border:1px solid #fde8c4; overflow:hidden;">
+            <div class="cal-grid" style="border-bottom:1px solid #fde8c4;" id="d3-weekdays"></div>
+            <div class="cal-grid" id="d3-cal"></div>
+          </div>
+          <div style="background:white; border-radius:13px; border:1px solid #fde8c4; padding:11px; margin-top:9px;">
+            <div style="font-size:10px; font-weight:700; color:#d97706; margin-bottom:5px;">TODAY · 3월 21일 토요일</div>
+            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+              <span style="background:#fef3c7; color:#92400e; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700;">조출A</span>
+              <span style="background:#f0fdf4; color:#16a34a; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700;">임현우</span>
+            </div>
+          </div>
+          <div style="margin-top:9px; display:flex; flex-direction:column; gap:6px;" id="d3-users"></div>
+        </div>
+      </div>
+    </div>
+    <button class="apply-btn" style="background:#f59e0b; color:white;" onclick="selectDesign(3)">이 디자인 적용</button>
+  </div>
+
+</div><!-- end designs-row -->
+
+<div style="text-align:center; padding:0.5rem 0 1.5rem; color:#94a3b8; font-size:12px;">
+  ← 좌우로 스크롤하세요 →
+</div>
+
+<script>
+// ─── 데이터 ───────────────────────────────────────────────
+// 2026년 3월 1일 = 일요일(0)
+const MAR_START_DOW = 0; // 0=Sun
+const MAR_DAYS = 31;
+const TODAY = 21;
+
+const schedule = {
+  1:'조출D', 2:'정상', 3:'조출1', 4:'조출1', 5:'조출1', 6:'조출1', 7:'연장A',
+  8:'연장B', 9:'조출E', 10:'조출D', 11:'조출A', 12:'조출1', 13:'조출1', 14:'조출1',
+  15:'연장B', 16:'연장A', 17:'조출D', 18:'조출1', 19:'조출1', 20:'조출1', 21:'조출A',
+  22:'연장B', 23:'조출D', 24:'조출A', 25:'조출C', 26:'조출1', 27:'조출1', 28:'조출1',
+  29:'조출D', 30:'연장A', 31:'조출A'
+};
+
+const sampleUsers = [
+  { name:'정채석', type:'조출1', color0:'#ede9fe', tc0:'#7c3aed', color1:'rgba(99,102,241,0.15)', tc1:'#818cf8', color2:'#f1f5f9', tc2:'#0f172a', color3:'#fef3c7', tc3:'#92400e' },
+  { name:'진충열', type:'연장B', color0:'#fef3c7', tc0:'#b45309', color1:'rgba(251,191,36,0.15)', tc1:'#fbbf24', color2:'#f1f5f9', tc2:'#0f172a', color3:'#fff7ed', tc3:'#c2410c' },
+  { name:'김주인', type:'정상',  color0:'#dcfce7', tc0:'#16a34a', color1:'rgba(52,211,153,0.15)', tc1:'#34d399', color2:'#f1f5f9', tc2:'#0f172a', color3:'#dcfce7', tc3:'#15803d' },
+  { name:'김정훈', type:'조출D', color0:'#e0e7ff', tc0:'#4338ca', color1:'rgba(139,92,246,0.15)', tc1:'#a78bfa', color2:'#f1f5f9', tc2:'#0f172a', color3:'#fef3c7', tc3:'#92400e' },
+];
+
+// ─── 테마 설정 ────────────────────────────────────────────
+const themes = [
+  // 0: 기본
+  {
+    weekdayColor: (i) => i===0?'#f87171': i===6?'#60a5fa':'#94a3b8',
+    todayBg: '#6366f1', todayColor: 'white',
+    dateSunColor: '#f87171', dateSatColor: '#60a5fa', dateColor: '#334155',
+    cellBorder: '1px solid #f8fafc',
+    tagBg: (t) => typeColor0(t).bg,
+    tagColor: (t) => typeColor0(t).tc,
+    userCardBg: 'white', userCardBorder: '1px solid #e2e8f0',
+    userNameColor: '#1e293b', userSubColor: '#94a3b8',
+    userTagField: 'color0', userTcField: 'tc0',
+  },
+  // 1: 다크
+  {
+    weekdayColor: (i) => i===0?'#f87171': i===6?'#60a5fa':'#4a4a7a',
+    todayBg: '#7c3aed', todayColor: 'white',
+    dateSunColor: '#f87171', dateSatColor: '#60a5fa', dateColor: '#c4c4e0',
+    cellBorder: '1px solid #1e1e35',
+    tagBg: (t) => typeColor1(t).bg,
+    tagColor: (t) => typeColor1(t).tc,
+    userCardBg: '#1a1a2e', userCardBorder: '1px solid #2d2d4e',
+    userNameColor: '#e2e8f0', userSubColor: '#4a4a7a',
+    userTagField: 'color1', userTcField: 'tc1',
+  },
+  // 2: 미니멀
+  {
+    weekdayColor: (i) => i===0?'#ef4444': i===6?'#3b82f6':'#0f172a',
+    todayBg: '#0f172a', todayColor: 'white',
+    dateSunColor: '#ef4444', dateSatColor: '#3b82f6', dateColor: '#0f172a',
+    cellBorder: '1px solid #f1f5f9',
+    tagBg: (t) => '#f1f5f9',
+    tagColor: (t) => '#334155',
+    userCardBg: 'white', userCardBorder: '1px solid #e2e8f0',
+    userNameColor: '#0f172a', userSubColor: '#94a3b8',
+    userTagField: 'color2', userTcField: 'tc2',
+  },
+  // 3: 웜톤
+  {
+    weekdayColor: (i) => i===0?'#f87171': i===6?'#60a5fa':'#b45309',
+    todayBg: '#f59e0b', todayColor: 'white',
+    dateSunColor: '#f87171', dateSatColor: '#60a5fa', dateColor: '#78350f',
+    cellBorder: '1px solid #fff8ee',
+    tagBg: (t) => typeColor3(t).bg,
+    tagColor: (t) => typeColor3(t).tc,
+    userCardBg: 'white', userCardBorder: '1px solid #fde8c4',
+    userNameColor: '#78350f', userSubColor: '#b45309',
+    userTagField: 'color3', userTcField: 'tc3',
+  },
+];
+
+// ─── 근무 유형 색상 ────────────────────────────────────────
+function typeColor0(t) {
+  if (!t) return {bg:'transparent', tc:'transparent'};
+  if (t.startsWith('조출')) return {bg:'#ede9fe', tc:'#7c3aed'};
+  if (t.startsWith('연장')) return {bg:'#fef3c7', tc:'#b45309'};
+  if (t === '정상') return {bg:'#dcfce7', tc:'#16a34a'};
+  return {bg:'#e2e8f0', tc:'#475569'};
+}
+function typeColor1(t) {
+  if (!t) return {bg:'transparent', tc:'transparent'};
+  if (t.startsWith('조출')) return {bg:'rgba(139,92,246,0.18)', tc:'#a78bfa'};
+  if (t.startsWith('연장')) return {bg:'rgba(251,191,36,0.18)', tc:'#fbbf24'};
+  if (t === '정상') return {bg:'rgba(52,211,153,0.18)', tc:'#34d399'};
+  return {bg:'rgba(148,163,184,0.18)', tc:'#94a3b8'};
+}
+function typeColor3(t) {
+  if (!t) return {bg:'transparent', tc:'transparent'};
+  if (t.startsWith('조출')) return {bg:'#fef3c7', tc:'#92400e'};
+  if (t.startsWith('연장')) return {bg:'#fff7ed', tc:'#c2410c'};
+  if (t === '정상') return {bg:'#dcfce7', tc:'#15803d'};
+  return {bg:'#fde8c4', tc:'#92400e'};
+}
+
+// ─── 캘린더 생성 ──────────────────────────────────────────
+function buildWeekdays(containerId, th) {
+  const el = document.getElementById(containerId);
+  const names = ['일','월','화','수','목','금','토'];
+  names.forEach((d, i) => {
+    const div = document.createElement('div');
+    div.style.cssText = `text-align:center; font-size:9px; font-weight:900; padding:5px 0; color:${th.weekdayColor(i)}`;
+    div.textContent = d;
+    el.appendChild(div);
+  });
+}
+
+function buildCalendar(containerId, th) {
+  const el = document.getElementById(containerId);
+  const totalCells = Math.ceil((MAR_START_DOW + MAR_DAYS) / 7) * 7;
+
+  for (let c = 0; c < totalCells; c++) {
+    const day = c - MAR_START_DOW + 1;
+    const dow = c % 7; // 0=Sun
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    cell.style.borderRight = dow < 6 ? th.cellBorder : 'none';
+    cell.style.borderBottom = c < totalCells - 7 ? th.cellBorder : 'none';
+
+    if (day >= 1 && day <= MAR_DAYS) {
+      const isToday = day === TODAY;
+      const isSun = dow === 0;
+      const isSat = dow === 6;
+
+      // 날짜 숫자
+      const dateEl = document.createElement('div');
+      dateEl.className = 'cal-date';
+      dateEl.textContent = day;
+      if (isToday) {
+        dateEl.style.background = th.todayBg;
+        dateEl.style.color = th.todayColor;
+        dateEl.style.fontWeight = '900';
+      } else {
+        dateEl.style.color = isSun ? th.dateSunColor : isSat ? th.dateSatColor : th.dateColor;
+      }
+      cell.appendChild(dateEl);
+
+      // 근무 유형 태그
+      const wt = schedule[day];
+      if (wt) {
+        const tagEl = document.createElement('div');
+        tagEl.className = 'cal-tag';
+        tagEl.textContent = wt.length > 3 ? wt.slice(0,3) : wt;
+        tagEl.style.background = th.tagBg(wt);
+        tagEl.style.color = th.tagColor(wt);
+        cell.appendChild(tagEl);
+      }
+    } else {
+      // 빈 셀
+      cell.style.opacity = '0';
+    }
+
+    el.appendChild(cell);
+  }
+}
+
+// ─── 팀원 카드 생성 ───────────────────────────────────────
+function buildUserCards(containerId, themeIdx) {
+  const el = document.getElementById(containerId);
+  const th = themes[themeIdx];
+
+  sampleUsers.forEach(u => {
+    const card = document.createElement('div');
+    card.style.cssText = `background:${th.userCardBg}; border:${th.userCardBorder}; border-radius:${themeIdx===2?'8px':'12px'}; padding:8px 10px; display:flex; align-items:center; justify-content:space-between;`;
+
+    const left = document.createElement('div');
+    const nameEl = document.createElement('div');
+    nameEl.style.cssText = `font-size:12px; font-weight:800; color:${th.userNameColor};`;
+    nameEl.textContent = u.name;
+
+    const subEl = document.createElement('div');
+    subEl.style.cssText = `font-size:10px; color:${th.userSubColor}; margin-top:1px;`;
+    subEl.textContent = '목포센터';
+
+    left.appendChild(nameEl);
+    left.appendChild(subEl);
+
+    const tagEl = document.createElement('div');
+    tagEl.style.cssText = `background:${u[th.userTagField]}; color:${u[th.userTcField]}; padding:3px 9px; border-radius:${themeIdx===2?'4px':'999px'}; font-size:10px; font-weight:700;`;
+    tagEl.textContent = u.type;
+
+    card.appendChild(left);
+    card.appendChild(tagEl);
+    el.appendChild(card);
+  });
+}
+
+// ─── 전체 초기화 ──────────────────────────────────────────
+for (let i = 0; i < 4; i++) {
+  buildWeekdays(`d${i}-weekdays`, themes[i]);
+  buildCalendar(`d${i}-cal`, themes[i]);
+  buildUserCards(`d${i}-users`, i);
+}
+
+// ─── 디자인 선택 ──────────────────────────────────────────
+const designLabels = ['기본 디자인', '다크 모드', '미니멀 클린', '웜톤 카드'];
+let currentDesign = 0;
+
+function selectDesign(idx) {
+  currentDesign = idx;
+  document.getElementById('selected-label').textContent =
+    idx === 0 ? '현재: 기본 디자인 적용 중' : `선택: ${designLabels[idx]}`;
+
+  const badge = document.getElementById('badge-0');
+  badge.style.display = idx === 0 ? 'inline-block' : 'none';
+
+  const btns = document.querySelectorAll('.apply-btn');
+  btns.forEach((btn, i) => {
+    if (i === idx) {
+      btn.textContent = '✓ 선택됨';
+      btn.style.opacity = '0.85';
+    } else {
+      btn.textContent = i === 0 ? '기본으로 돌아가기' : '이 디자인 적용';
+      btn.style.opacity = '1';
+    }
+  });
+  // 기본(0) 버튼은 항상 다르게
+  if (idx !== 0) btns[0].textContent = '기본으로 돌아가기';
+  else btns[0].textContent = '✓ 현재 적용 중';
+
+  if (idx !== 0) {
+    setTimeout(() => {
+      alert(`"${designLabels[idx]}" 선택!\n\nCowork 채팅창에 알려주시면 바로 앱에 적용해 드릴게요 😊`);
+    }, 100);
+  }
+}
+
+// 초기 상태 세팅
+selectDesign(0);
+</script>
+</body>
+</html>

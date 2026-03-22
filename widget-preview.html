@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>위젯 미리보기</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: #e2e8f0;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── 사이드바 ─────────────────────────────────────────── */
+.sidebar {
+  width: 400px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #1e293b;
+  color: white;
+}
+.sidebar-header h1 { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+.sidebar-header p { font-size: 11px; color: #94a3b8; }
+
+.tabs { display: flex; border-bottom: 1px solid #e2e8f0; }
+.tab {
+  flex: 1; padding: 10px; font-size: 12px; font-weight: 700;
+  cursor: pointer; text-align: center; color: #94a3b8; border: none;
+  background: none; border-bottom: 2px solid transparent;
+}
+.tab.active { color: #6366f1; border-bottom-color: #6366f1; }
+
+.tab-content { flex: 1; overflow-y: auto; padding: 14px; display: none; }
+.tab-content.active { display: block; }
+
+/* ─── 사이드바 폼 ──────────────────────────────────────── */
+.field-group { margin-bottom: 14px; }
+.field-label {
+  font-size: 11px; font-weight: 700; color: #475569;
+  display: block; margin-bottom: 5px;
+}
+.field-hint { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+textarea {
+  width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 8px 10px; font-size: 11px; font-family: 'Consolas', monospace;
+  resize: vertical; color: #1e293b; line-height: 1.5;
+}
+textarea:focus { outline: none; border-color: #6366f1; }
+input[type="color"] {
+  width: 36px; height: 28px; border: 1px solid #e2e8f0;
+  border-radius: 6px; cursor: pointer; padding: 2px;
+}
+input[type="text"], input[type="number"] {
+  border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px;
+  font-size: 12px; color: #1e293b; width: 100%;
+}
+input:focus { outline: none; border-color: #6366f1; }
+.color-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.color-row span { font-size: 11px; color: #475569; flex: 1; }
+
+.apply-btn {
+  width: 100%; padding: 10px; background: #6366f1; color: white;
+  border: none; border-radius: 8px; font-size: 13px; font-weight: 800;
+  cursor: pointer; margin-top: 4px;
+}
+.apply-btn:hover { background: #4f46e5; }
+
+.error-msg {
+  background: #fef2f2; border: 1px solid #fecaca;
+  color: #dc2626; font-size: 11px; padding: 8px 10px;
+  border-radius: 6px; margin-bottom: 10px; display: none;
+}
+
+/* ─── 미리보기 영역 ─────────────────────────────────────── */
+.preview-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  overflow-y: auto;
+  gap: 16px;
+}
+.preview-label {
+  font-size: 12px; font-weight: 700; color: #64748b; text-align: center;
+}
+
+/* ─── 위젯 프레임 ───────────────────────────────────────── */
+.widget-shadow {
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 10px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.widget-frame {
+  width: 320px;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 7px;
+}
+
+/* ─── 위젯 헤더 (work_schedule_widget.xml 헤더 LinearLayout) ─── */
+.w-header {
+  height: 41px;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+}
+.w-arrow {
+  width: 40px; height: 41px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: bold; cursor: pointer;
+  user-select: none; flex-shrink: 0;
+}
+.w-arrow:hover { background: rgba(0,0,0,0.05); }
+.w-month {
+  flex: 1; text-align: center;
+  font-size: 16px; font-weight: bold; color: #1E293B;
+}
+
+/* ─── 달력 섹션 ──────────────────────────────────────────── */
+.w-calendar-section {
+  margin-top: 5px;
+  background: white;
+}
+.w-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: 25px;
+}
+.w-weekday {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9.5px; font-weight: bold;
+}
+
+/* ─── 그리드 (42 cells) ───────────────────────────────────── */
+.w-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.w-cell {
+  min-height: 70px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 3px;
+  background: #FFFFFF;
+  border-top: 1px solid #CBD5E1;
+}
+.w-cell.today-cell { background: #EAF2FF; }
+.w-cell.period-cell { background: #F9F571; }
+.w-cell.border-left { border-left: 1px solid #CBD5E1; }
+.w-cell.border-right { border-right: 1px solid #CBD5E1; }
+.w-cell.border-bottom { border-bottom: 1px solid #CBD5E1; }
+
+.c-day { font-size: 9.5px; font-weight: bold; color: #1E293B; }
+.c-shift {
+  font-size: 9px; font-weight: bold; color: white;
+  padding: 1px 4px; border-radius: 2px;
+  margin-top: 4px; align-self: center;
+  max-width: 95%; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.c-note {
+  display: inline-block;
+  font-size: 7px; font-weight: 700;
+  margin-top: 3px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  max-width: 95%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  align-self: center;
+  text-align: center;
+}
+.c-out { opacity: 0; pointer-events: none; }
+
+/* ─── 오늘 일정 섹션 ──────────────────────────────────────── */
+.w-notes-section {
+  margin-top: 5px;
+  background: white;
+  padding: 7px;
+}
+.w-notes-title {
+  font-size: 9.5px; font-weight: bold; color: #1E293B;
+}
+.w-note-card {
+  margin-top: 4px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 6px;
+}
+.w-note-card:first-of-type { margin-top: 5px; }
+.w-note-accent { width: 3px; flex-shrink: 0; }
+.w-note-body {
+  flex: 1; padding: 5px 7px;
+  font-size: 8.5px; font-weight: bold;
+}
+.w-notes-empty {
+  font-size: 8.5px; color: #94A3B8; margin-top: 3px;
+}
+
+/* ─── 배지 ───────────────────────────────────────────────── */
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 99px;
+  font-size: 10px; font-weight: 700;
+}
+.badge-month { background: #e0e7ff; color: #4338ca; }
+.badge-offset { background: #f0fdf4; color: #16a34a; }
+
+/* ─── 섹션 제목 ──────────────────────────────────────────── */
+.section-title {
+  font-size: 11px; font-weight: 800; color: #334155;
+  margin-bottom: 8px; padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex; align-items: center; gap: 6px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     사이드바
+═══════════════════════════════════════════════ -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>📱 위젯 미리보기</h1>
+    <p>Android 위젯이 실제로 어떻게 보이는지 확인하세요</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('data')">📅 데이터</button>
+    <button class="tab" onclick="switchTab('style')">🎨 스타일</button>
+    <button class="tab" onclick="switchTab('info')">ℹ️ 설명</button>
+  </div>
+
+  <!-- ── 데이터 탭 ──────────────────────────────── -->
+  <div class="tab-content active" id="tab-data">
+    <div class="field-group">
+      <div class="section-title">
+        <span>📆 기준 날짜</span>
+      </div>
+      <label class="field-label">오늘 날짜</label>
+      <input type="text" id="today-input" value="2026-03-22" placeholder="YYYY-MM-DD"
+        oninput="renderWidget()" />
+      <div class="field-hint">이 날짜가 위젯에서 "오늘"로 강조됩니다</div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-title"><span>📋 이번 달 셀 데이터 (JSON)</span></div>
+      <div class="error-msg" id="json-error"></div>
+      <textarea id="cells-json" rows="12" oninput="renderWidget()"></textarea>
+      <div class="field-hint">각 셀: inMonth, isPeriod, dayText, shiftText, noteText, dayColor, shiftColor, noteColor, dateStr</div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">오늘 일정 메모 (JSON)</label>
+      <textarea id="notes-json" rows="4" oninput="renderWidget()">[]</textarea>
+      <div class="field-hint">예: [{"label":"삼일절","kind":"holiday"},{"label":"야간당직","kind":"note"}]</div>
+    </div>
+
+    <button class="apply-btn" onclick="loadSampleData()">🔄 샘플 데이터 불러오기</button>
+    <div style="margin-top:8px;">
+      <button class="apply-btn" style="background:#0f172a;" onclick="copyJson()">📋 현재 JSON 복사</button>
+    </div>
+  </div>
+
+  <!-- ── 스타일 탭 ──────────────────────────────── -->
+  <div class="tab-content" id="tab-style">
+    <div class="field-group">
+      <div class="section-title"><span>🖼️ 위젯 배경</span></div>
+      <div class="color-row">
+        <span>위젯 배경색</span>
+        <input type="color" id="c-widget-bg" value="#FFFFFF" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>헤더 바 배경</span>
+        <input type="color" id="c-header-bg" value="#F1F5F9" oninput="applyStyles()" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-title"><span>📝 텍스트 색상</span></div>
+      <div class="color-row">
+        <span>월 레이블 색</span>
+        <input type="color" id="c-month" value="#1E293B" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>화살표 색 (일반)</span>
+        <input type="color" id="c-arrow" value="#475569" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>화살표 색 (비활성)</span>
+        <input type="color" id="c-arrow-dim" value="#CBD5E1" oninput="applyStyles()" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-title"><span>📅 요일 헤더 색상</span></div>
+      <div class="color-row">
+        <span>일요일 색</span>
+        <input type="color" id="c-sun" value="#FB7185" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>평일 색</span>
+        <input type="color" id="c-weekday" value="#64748B" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>토요일 색</span>
+        <input type="color" id="c-sat" value="#3B82F6" oninput="applyStyles()" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-title"><span>📦 셀 배경색</span></div>
+      <div class="color-row">
+        <span>일반 셀</span>
+        <input type="color" id="c-cell-normal" value="#FFFFFF" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>오늘 셀</span>
+        <input type="color" id="c-cell-today" value="#EAF2FF" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>기간 셀</span>
+        <input type="color" id="c-cell-period" value="#F9F571" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>셀 테두리</span>
+        <input type="color" id="c-cell-border" value="#CBD5E1" oninput="applyStyles()" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-title"><span>🗒️ 오늘 일정 카드</span></div>
+      <div class="color-row">
+        <span>일반 카드 액센트</span>
+        <input type="color" id="c-note-accent" value="#6366F1" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>일반 카드 배경</span>
+        <input type="color" id="c-note-bg" value="#EEF2FF" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>일반 카드 텍스트</span>
+        <input type="color" id="c-note-text" value="#3730A3" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>공휴일 카드 액센트</span>
+        <input type="color" id="c-holiday-accent" value="#F43F5E" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>공휴일 카드 배경</span>
+        <input type="color" id="c-holiday-bg" value="#FFF1F2" oninput="applyStyles()" />
+      </div>
+      <div class="color-row">
+        <span>공휴일 카드 텍스트</span>
+        <input type="color" id="c-holiday-text" value="#9F1239" oninput="applyStyles()" />
+      </div>
+    </div>
+
+    <button class="apply-btn" onclick="exportXmlColors()">📋 Android XML 색상값 복사</button>
+    <div style="margin-top:8px;">
+      <button class="apply-btn" style="background:#64748b;" onclick="resetStyles()">↺ 기본값으로 초기화</button>
+    </div>
+    <div id="xml-output" style="display:none; margin-top:10px;">
+      <label class="field-label">복사할 색상값</label>
+      <textarea id="xml-text" rows="16" style="font-size:10px;"></textarea>
+    </div>
+  </div>
+
+  <!-- ── 설명 탭 ──────────────────────────────── -->
+  <div class="tab-content" id="tab-info">
+    <div class="section-title"><span>📐 셀 데이터 형식</span></div>
+    <div style="font-size:11px; color:#475569; line-height:1.7; background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:12px;">
+      <strong>inMonth</strong> — 이번 달 날짜 여부 (bool)<br>
+      <strong>isPeriod</strong> — 기간 일정 셀 (bool, 녹색 배경)<br>
+      <strong>dayText</strong> — 날짜 숫자 ("22")<br>
+      <strong>shiftText</strong> — 근무 유형 라벨 ("조출A")<br>
+      <strong>noteText</strong> — 메모/공휴일 한 줄 ("삼일절")<br>
+      <strong>dayColor</strong> — 날짜 색 (#1E293B, #FB7185, #3B82F6)<br>
+      <strong>shiftColor</strong> — 근무 배지 배경색 (#8B5CF6 등)<br>
+      <strong>noteColor</strong> — 메모 색 (#64748B)<br>
+      <strong>dateStr</strong> — ISO 날짜 ("2026-03-22")
+    </div>
+
+    <div class="section-title"><span>🎨 WIDGET_SHIFT_COLORS 배열</span></div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:4px; font-size:11px;">
+        <div style="width:20px;height:20px;background:#FB7185;border-radius:4px;"></div> 0
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; font-size:11px;">
+        <div style="width:20px;height:20px;background:#F97316;border-radius:4px;"></div> 1
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; font-size:11px;">
+        <div style="width:20px;height:20px;background:#EAB308;border-radius:4px;"></div> 2
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; font-size:11px;">
+        <div style="width:20px;height:20px;background:#22C55E;border-radius:4px;"></div> 3
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; font-size:11px;">
+        <div style="width:20px;height:20px;background:#38BDF8;border-radius:4px;"></div> 4
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; font-size:11px;">
+        <div style="width:20px;height:20px;background:#3B82F6;border-radius:4px;"></div> 5
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; font-size:11px;">
+        <div style="width:20px;height:20px;background:#8B5CF6;border-radius:4px;"></div> 6
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; font-size:11px;">
+        <div style="width:20px;height:20px;background:#94A3B8;border-radius:4px;"></div> 7
+      </div>
+    </div>
+
+    <div class="section-title"><span>📱 레이아웃 파일</span></div>
+    <div style="font-size:10.5px; color:#475569; line-height:1.8; background:#f8fafc; padding:10px; border-radius:8px;">
+      <strong>work_schedule_widget.xml</strong> — 위젯 전체 레이아웃<br>
+      <strong>work_schedule_widget_day_item.xml</strong> — 개별 날짜 셀<br>
+      <strong>WorkScheduleWidgetProvider.java</strong> — 위젯 업데이트 로직<br>
+      <strong>WorkScheduleGridFactory.java</strong> — GridView 어댑터
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     미리보기 영역
+═══════════════════════════════════════════════ -->
+<div class="preview-area">
+  <div class="preview-label">
+    <span class="badge badge-month" id="preview-month-badge">2026년 3월</span>
+    &nbsp;
+    <span class="badge badge-offset" id="preview-offset-badge">현재 달 (offset 0)</span>
+  </div>
+
+  <div class="widget-shadow">
+    <div class="widget-frame" id="widget-frame">
+
+      <!-- 헤더: 이전/다음 달 버튼 + 월 레이블 -->
+      <div class="w-header">
+        <div class="w-arrow" id="btn-prev" onclick="changeOffset(-1)">‹</div>
+        <div class="w-month" id="w-month-label">2026년 3월</div>
+        <div class="w-arrow" id="btn-next" onclick="changeOffset(1)">›</div>
+      </div>
+
+      <!-- 달력 영역 -->
+      <div class="w-calendar-section">
+        <!-- 요일 헤더 -->
+        <div class="w-weekdays" id="w-weekdays"></div>
+        <!-- 날짜 그리드 -->
+        <div class="w-grid" id="w-grid"></div>
+      </div>
+
+      <!-- 오늘 일정 섹션 -->
+      <div class="w-notes-section" id="w-notes-section">
+        <div class="w-notes-title" id="w-notes-title">오늘의 일정</div>
+        <div id="w-notes-cards"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="font-size:11px; color:#94a3b8; text-align:center;">
+    실제 Android 위젯 레이아웃을 1:1 재현한 미리보기입니다<br>
+    좌측 패널에서 데이터와 색상을 수정하면 즉시 반영됩니다
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  상태 & 상수
+// ═══════════════════════════════════════════════
+let monthOffset = 0; // -1, 0, 1
+
+const WEEKDAY_COLORS = {
+  sun: '#FB7185',
+  weekday: '#64748B',
+  sat: '#3B82F6',
+};
+
+// ═══════════════════════════════════════════════
+//  탭 전환
+// ═══════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const names = ['data','style','info'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════
+//  월 오프셋 변경
+// ═══════════════════════════════════════════════
+function changeOffset(delta) {
+  const next = monthOffset + delta;
+  if (next < -1 || next > 1) return;
+  monthOffset = next;
+  renderWidget();
+}
+
+// ═══════════════════════════════════════════════
+//  스타일 적용 (색상 탭)
+// ═══════════════════════════════════════════════
+function applyStyles() {
+  const g = id => document.getElementById(id).value;
+  // 위젯 배경
+  document.getElementById('widget-frame').style.background = g('c-widget-bg');
+  // 헤더
+  document.querySelectorAll('.w-header').forEach(el => el.style.background = g('c-header-bg'));
+  document.getElementById('w-month-label').style.color = g('c-month');
+  // 요일 헤더
+  renderWeekdays();
+  // 셀 배경 & 테두리
+  renderGrid(parseCellsJson());
+  // 오늘 일정 카드
+  renderNotes();
+  // 화살표
+  updateArrows();
+}
+
+function resetStyles() {
+  const defaults = {
+    'c-widget-bg': '#FFFFFF', 'c-header-bg': '#F1F5F9',
+    'c-month': '#1E293B', 'c-arrow': '#475569', 'c-arrow-dim': '#CBD5E1',
+    'c-sun': '#FB7185', 'c-weekday': '#64748B', 'c-sat': '#3B82F6',
+    'c-cell-normal': '#FFFFFF', 'c-cell-today': '#EAF2FF', 'c-cell-period': '#F9F571',
+    'c-cell-border': '#CBD5E1',
+    'c-note-accent': '#6366F1', 'c-note-bg': '#EEF2FF', 'c-note-text': '#3730A3',
+    'c-holiday-accent': '#F43F5E', 'c-holiday-bg': '#FFF1F2', 'c-holiday-text': '#9F1239',
+  };
+  Object.entries(defaults).forEach(([k, v]) => {
+    document.getElementById(k).value = v;
+  });
+  applyStyles();
+}
+
+function exportXmlColors() {
+  const g = id => document.getElementById(id).value.toUpperCase();
+  const text = `<!-- work_schedule_widget.xml 배경 -->
+android:background="${g('c-widget-bg')}"
+
+<!-- 헤더 바 배경 -->
+android:background="${g('c-header-bg')}"
+
+<!-- 월 레이블 -->
+android:textColor="${g('c-month')}"
+
+<!-- 화살표 버튼 (일반) -->
+android:textColor="${g('c-arrow')}"
+<!-- 화살표 버튼 (비활성) -->
+0xFF${g('c-arrow-dim').slice(1)}
+
+<!-- 요일 헤더 -->
+일요일: android:textColor="${g('c-sun')}"
+평일:   android:textColor="${g('c-weekday')}"
+토요일: android:textColor="${g('c-sat')}"
+
+<!-- widget_cell_normal.xml -->
+<solid android:color="${g('c-cell-normal')}" />
+
+<!-- widget_cell_today.xml -->
+<solid android:color="${g('c-cell-today')}" />
+
+<!-- widget_cell_period.xml -->
+<solid android:color="${g('c-cell-period')}" />
+
+<!-- 셀 테두리 -->
+android:background="${g('c-cell-border')}"
+
+<!-- widget_note_card_bg.xml 액센트 -->
+<solid android:color="${g('c-note-accent')}" />
+<!-- widget_note_card_bg.xml 본체 -->
+<solid android:color="${g('c-note-bg')}" />
+<!-- 일반 메모 텍스트 -->
+Color.parseColor("${g('c-note-text')}")
+
+<!-- widget_note_card_holiday_bg.xml 액센트 -->
+<solid android:color="${g('c-holiday-accent')}" />
+<!-- widget_note_card_holiday_bg.xml 본체 -->
+<solid android:color="${g('c-holiday-bg')}" />
+<!-- 공휴일 메모 텍스트 -->
+Color.parseColor("${g('c-holiday-text')}")`;
+
+  document.getElementById('xml-text').value = text;
+  const out = document.getElementById('xml-output');
+  out.style.display = 'block';
+  navigator.clipboard.writeText(text).catch(() => {});
+}
+
+// ═══════════════════════════════════════════════
+//  JSON 파싱
+// ═══════════════════════════════════════════════
+function parseCellsJson() {
+  const errorEl = document.getElementById('json-error');
+  try {
+    const raw = document.getElementById('cells-json').value.trim();
+    const cells = JSON.parse(raw);
+    if (!Array.isArray(cells)) throw new Error('배열이 아닙니다');
+    errorEl.style.display = 'none';
+    return cells;
+  } catch (e) {
+    errorEl.textContent = 'JSON 오류: ' + e.message;
+    errorEl.style.display = 'block';
+    return [];
+  }
+}
+
+function parseTodayNotes() {
+  try {
+    return JSON.parse(document.getElementById('notes-json').value.trim()) || [];
+  } catch { return []; }
+}
+
+// ═══════════════════════════════════════════════
+//  위젯 요일 헤더 렌더
+// ═══════════════════════════════════════════════
+function renderWeekdays() {
+  const container = document.getElementById('w-weekdays');
+  container.innerHTML = '';
+  const labels = ['일','월','화','수','목','금','토'];
+  const sunColor = document.getElementById('c-sun')?.value || '#FB7185';
+  const weekColor = document.getElementById('c-weekday')?.value || '#64748B';
+  const satColor = document.getElementById('c-sat')?.value || '#3B82F6';
+  labels.forEach((label, i) => {
+    const div = document.createElement('div');
+    div.className = 'w-weekday';
+    div.textContent = label;
+    div.style.color = i === 0 ? sunColor : i === 6 ? satColor : weekColor;
+    container.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  위젯 그리드 렌더
+// ═══════════════════════════════════════════════
+function renderGrid(cells) {
+  const container = document.getElementById('w-grid');
+  container.innerHTML = '';
+
+  const todayStr = document.getElementById('today-input').value.trim();
+  const cellNormal = document.getElementById('c-cell-normal')?.value || '#FFFFFF';
+  const cellToday = document.getElementById('c-cell-today')?.value || '#EAF2FF';
+  const cellPeriod = document.getElementById('c-cell-period')?.value || '#F9F571';
+  const borderColor = document.getElementById('c-cell-border')?.value || '#CBD5E1';
+
+  const TOTAL = 42;
+  const filledCells = cells.slice(0, TOTAL);
+  while (filledCells.length < TOTAL) {
+    filledCells.push({ inMonth: false, isPeriod: false, dayText: '', shiftText: '', noteText: '', dayColor: '#CBD5E1', shiftColor: '#94A3B8', noteColor: '#64748B', dateStr: '' });
+  }
+
+  filledCells.forEach((cell, idx) => {
+    const row = Math.floor(idx / 7);
+    const col = idx % 7;
+    const isLastRow = row === 5;
+    const isLeft = col === 0;
+    const isRight = col === 6;
+
+    const div = document.createElement('div');
+    div.className = 'w-cell';
+
+    // 배경색
+    const isToday = cell.inMonth && cell.dateStr === todayStr;
+    if (isToday) {
+      div.style.background = cellToday;
+    } else if (cell.isPeriod && cell.inMonth) {
+      div.style.background = cellPeriod;
+    } else {
+      div.style.background = cellNormal;
+    }
+
+    // 테두리
+    div.style.borderTopColor = borderColor;
+    if (isLeft) { div.style.borderLeft = `1px solid ${borderColor}`; }
+    if (isRight) { div.style.borderRight = `1px solid ${borderColor}`; }
+    if (isLastRow) { div.style.borderBottom = `1px solid ${borderColor}`; }
+
+    if (!cell.inMonth) {
+      // 달 외 날짜: 숫자만 흐리게
+      const dayEl = document.createElement('div');
+      dayEl.className = 'c-day';
+      dayEl.textContent = cell.dayText;
+      dayEl.style.color = '#CBD5E1';
+      div.appendChild(dayEl);
+    } else {
+      // 이번 달 날짜
+      const dayEl = document.createElement('div');
+      dayEl.className = 'c-day';
+      dayEl.textContent = cell.dayText;
+      dayEl.style.color = cell.dayColor || '#1E293B';
+      div.appendChild(dayEl);
+
+      if (cell.shiftText && cell.shiftText.trim()) {
+        const shiftEl = document.createElement('div');
+        shiftEl.className = 'c-shift';
+        shiftEl.textContent = cell.shiftText;
+        shiftEl.style.background = cell.shiftColor || '#94A3B8';
+        div.appendChild(shiftEl);
+      }
+
+      if (cell.noteText && cell.noteText.trim()) {
+        const noteEl = document.createElement('div');
+        noteEl.className = 'c-note';
+        noteEl.textContent = cell.noteText;
+        // 스타일 탭 색상 피커 값 읽기
+        const noteBgVal = document.getElementById('c-note-bg')?.value || '#EEF2FF';
+        const noteTextVal = document.getElementById('c-note-text')?.value || '#3730A3';
+        const holidayBgVal = document.getElementById('c-holiday-bg')?.value || '#FFF1F2';
+        const holidayTextVal = document.getElementById('c-holiday-text')?.value || '#9F1239';
+        // isHoliday 필드로 직접 판별 (일요일+공휴일 겹침도 정확히 처리)
+        if (cell.isHoliday) {
+          noteEl.style.backgroundColor = holidayBgVal;
+          noteEl.style.color = holidayTextVal;
+        } else {
+          noteEl.style.backgroundColor = noteBgVal;
+          noteEl.style.color = noteTextVal;
+        }
+        div.appendChild(noteEl);
+      }
+    }
+
+    container.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  오늘 일정 섹션 렌더
+// ═══════════════════════════════════════════════
+function renderNotes() {
+  const notes = parseTodayNotes();
+  const todayStr = document.getElementById('today-input').value.trim();
+  const titleEl = document.getElementById('w-notes-title');
+  const cardsEl = document.getElementById('w-notes-cards');
+
+  // 제목: "오늘의 일정 · 3월 22일"
+  if (todayStr && /^\d{4}-\d{2}-\d{2}$/.test(todayStr)) {
+    const [, m, d] = todayStr.split('-');
+    titleEl.textContent = `오늘의 일정 · ${parseInt(m, 10)}월 ${parseInt(d, 10)}일`;
+  } else {
+    titleEl.textContent = '오늘의 일정';
+  }
+
+  cardsEl.innerHTML = '';
+  const noteAccent = document.getElementById('c-note-accent')?.value || '#6366F1';
+  const noteBg = document.getElementById('c-note-bg')?.value || '#EEF2FF';
+  const noteText = document.getElementById('c-note-text')?.value || '#3730A3';
+  const holidayAccent = document.getElementById('c-holiday-accent')?.value || '#F43F5E';
+  const holidayBg = document.getElementById('c-holiday-bg')?.value || '#FFF1F2';
+  const holidayText = document.getElementById('c-holiday-text')?.value || '#9F1239';
+
+  if (!notes || notes.length === 0) {
+    const emptyEl = document.createElement('div');
+    emptyEl.className = 'w-notes-empty';
+    emptyEl.textContent = '오늘 일정이 없습니다';
+    cardsEl.appendChild(emptyEl);
+    return;
+  }
+
+  notes.slice(0, 5).forEach(note => {
+    const isHoliday = note.kind === 'holiday';
+    const card = document.createElement('div');
+    card.className = 'w-note-card';
+    card.style.marginTop = '3px';
+
+    const accent = document.createElement('div');
+    accent.className = 'w-note-accent';
+    accent.style.background = isHoliday ? holidayAccent : noteAccent;
+
+    const body = document.createElement('div');
+    body.className = 'w-note-body';
+    body.textContent = note.label || '';
+    body.style.background = isHoliday ? holidayBg : noteBg;
+    body.style.color = isHoliday ? holidayText : noteText;
+
+    card.appendChild(accent);
+    card.appendChild(body);
+    cardsEl.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  화살표 색상 업데이트
+// ═══════════════════════════════════════════════
+function updateArrows() {
+  const normal = document.getElementById('c-arrow')?.value || '#475569';
+  const dim = document.getElementById('c-arrow-dim')?.value || '#CBD5E1';
+  document.getElementById('btn-prev').style.color = monthOffset <= -1 ? dim : normal;
+  document.getElementById('btn-next').style.color = monthOffset >= 1 ? dim : normal;
+}
+
+// ═══════════════════════════════════════════════
+//  월 레이블 & 배지 업데이트
+// ═══════════════════════════════════════════════
+function updateMonthLabel() {
+  const todayStr = document.getElementById('today-input').value.trim();
+  let baseYear, baseMonth;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(todayStr)) {
+    [baseYear, baseMonth] = todayStr.split('-').map(Number);
+    baseMonth -= 1; // 0-indexed
+  } else {
+    const now = new Date();
+    baseYear = now.getFullYear();
+    baseMonth = now.getMonth();
+  }
+
+  const d = new Date(baseYear, baseMonth + monthOffset, 1);
+  const label = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
+  document.getElementById('w-month-label').style.color =
+    document.getElementById('c-month')?.value || '#1E293B';
+  document.getElementById('w-month-label').textContent = label;
+
+  const offsetLabel = monthOffset === -1 ? '이전 달 (offset -1)' :
+    monthOffset === 1 ? '다음 달 (offset +1)' : '현재 달 (offset 0)';
+  document.getElementById('preview-month-badge').textContent = label;
+  document.getElementById('preview-offset-badge').textContent = offsetLabel;
+}
+
+// ═══════════════════════════════════════════════
+//  전체 위젯 렌더
+// ═══════════════════════════════════════════════
+function renderWidget() {
+  const cells = parseCellsJson();
+  updateMonthLabel();
+  updateArrows();
+  renderWeekdays();
+  renderGrid(cells);
+  renderNotes();
+
+  // 위젯 프레임 배경
+  const widgetBg = document.getElementById('c-widget-bg')?.value || '#FFFFFF';
+  document.getElementById('widget-frame').style.background = widgetBg;
+  // 헤더 배경
+  document.querySelectorAll('.w-header').forEach(el => {
+    el.style.background = document.getElementById('c-header-bg')?.value || '#F1F5F9';
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  한국 공휴일 + 대체공휴일 계산
+// ═══════════════════════════════════════════════
+function toDateStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+// 고정 태양력 공휴일 (음력 명절 제외)
+function getSolarHolidays(year) {
+  return new Map([
+    [`${year}-01-01`, '신정'],
+    [`${year}-03-01`, '삼일절'],
+    [`${year}-05-05`, '어린이날'],
+    [`${year}-06-06`, '현충일'],
+    [`${year}-08-15`, '광복절'],
+    [`${year}-10-03`, '개천절'],
+    [`${year}-10-09`, '한글날'],
+    [`${year}-12-25`, '크리스마스'],
+  ]);
+}
+
+// 대체공휴일 계산
+// 규칙: 공휴일이 일요일이면 → 다음 평일 중 다른 공휴일/대체공휴일이 아닌 날
+//       어린이날이 토·일이면 → 다음 평일 (토→월, 일→화)
+function calcSubstituteHolidays(holidays) {
+  const substitutes = new Map();
+
+  // 처리 순서를 날짜 순으로
+  const sorted = [...holidays.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
+  for (const [dateStr, name] of sorted) {
+    const date = new Date(dateStr + 'T00:00:00');
+    const dow = date.getDay(); // 0=일, 6=토
+
+    let needSub = false;
+    let startOffset = 1;
+
+    if (dow === 0) {
+      // 일요일 공휴일 → 다음 날부터 탐색
+      needSub = true;
+      startOffset = 1;
+    } else if (dow === 6 && name === '어린이날') {
+      // 어린이날 토요일 → 2일 후(월요일)부터 탐색
+      needSub = true;
+      startOffset = 2;
+    }
+
+    if (!needSub) continue;
+
+    const candidate = new Date(date);
+    candidate.setDate(candidate.getDate() + startOffset);
+
+    // 이미 공휴일이거나 대체공휴일인 날은 건너뜀
+    while (
+      candidate.getDay() === 0 || // 일요일 불가
+      holidays.has(toDateStr(candidate)) ||
+      substitutes.has(toDateStr(candidate))
+    ) {
+      candidate.setDate(candidate.getDate() + 1);
+    }
+    substitutes.set(toDateStr(candidate), '대체공휴일');
+  }
+  return substitutes;
+}
+
+// 해당 월의 공휴일 맵 반환 (공휴일 + 대체공휴일 합산)
+function getHolidayMapForMonth(year, month) {
+  const solar = getSolarHolidays(year);
+  const subs = calcSubstituteHolidays(solar);
+  const all = new Map([...solar, ...subs]);
+
+  // 해당 월 것만 필터
+  const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
+  const filtered = new Map();
+  for (const [k, v] of all) {
+    if (k.startsWith(prefix)) filtered.set(k, v);
+  }
+  return filtered;
+}
+
+// ═══════════════════════════════════════════════
+//  샘플 데이터 생성
+// ═══════════════════════════════════════════════
+function buildSampleCells(year, month) {
+  const SHIFT_COLORS = ['#FB7185','#F97316','#EAB308','#22C55E','#38BDF8','#3B82F6','#8B5CF6','#94A3B8'];
+  const SHIFT_TYPES = [
+    { label: '조출A', colorIdx: 6 },
+    { label: '조출D', colorIdx: 0 },
+    { label: '연장B', colorIdx: 1 },
+    { label: '정상',  colorIdx: 3 },
+    { label: '조출1', colorIdx: 4 },
+    { label: '연장A', colorIdx: 2 },
+  ];
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+
+  // 샘플 스케줄
+  const sampleSchedule = {
+    1: 4, 2: 3, 3: 4, 4: 4, 5: 4, 6: 4, 7: 2,
+    8: 5, 9: 0, 10: 1, 11: 0, 12: 4, 13: 4, 14: 4,
+    15: 2, 16: 5, 17: 1, 18: 4, 19: 4, 20: 4, 21: 0,
+    22: 2, 23: 1, 24: 0, 25: 6, 26: 4, 27: 4, 28: 4,
+    29: 1, 30: 5, 31: 0,
+  };
+
+  // 공휴일 계산 (대체공휴일 포함)
+  const holidayMap = getHolidayMapForMonth(year, month);
+  // 근무 메모 (공휴일이 아닌 날)
+  const noteMap = { '2026-03-22': '야간당직' };
+
+  const cells = [];
+  for (let idx = 0; idx < 42; idx++) {
+    const day = idx - firstWeekday + 1;
+    const dow = idx % 7;
+
+    if (day < 1 || day > daysInMonth) {
+      const isPrev = day < 1;
+      const d = isPrev ? prevMonthDays + day : day - daysInMonth;
+      cells.push({
+        inMonth: false, isPeriod: false, isHoliday: false,
+        dayText: String(d), shiftText: '', noteText: '',
+        dayColor: '#CBD5E1', shiftColor: '#334155', noteColor: '#64748B', dateStr: '',
+      });
+      continue;
+    }
+
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isHoliday = holidayMap.has(dateStr);
+    const holidayName = holidayMap.get(dateStr) || '';
+    const shiftIdx = sampleSchedule[day];
+    const shift = shiftIdx !== undefined ? SHIFT_TYPES[shiftIdx % SHIFT_TYPES.length] : null;
+    const shiftColor = shift ? SHIFT_COLORS[shift.colorIdx] : '#94A3B8';
+    const noteText = holidayName || noteMap[dateStr] || '';
+    // 공휴일이면 빨강, 일요일이면 빨강, 토요일이면 파랑, 나머지 검정
+    const dayColor = isHoliday || dow === 0 ? '#FB7185' : dow === 6 ? '#3B82F6' : '#1E293B';
+    const isPeriod = [10,11,12,13,14].includes(day);
+
+    cells.push({
+      inMonth: true, isPeriod, isHoliday,
+      dayText: String(day), shiftText: shift ? shift.label : '',
+      noteText: isPeriod ? '출장' : noteText,
+      dayColor, shiftColor, noteColor: '#64748B', dateStr,
+    });
+  }
+  return cells;
+}
+
+function loadSampleData() {
+  const today = document.getElementById('today-input').value.trim();
+  let year = 2026, month = 2; // 3월 = index 2
+  if (/^\d{4}-\d{2}-\d{2}$/.test(today)) {
+    year = parseInt(today.split('-')[0]);
+    month = parseInt(today.split('-')[1]) - 1;
+  }
+
+  const cells = buildSampleCells(year, month);
+  document.getElementById('cells-json').value = JSON.stringify(cells, null, 2);
+
+  // 샘플 오늘 메모
+  const todayNotes = [];
+  if (today === '2026-03-01') {
+    todayNotes.push({ label: '삼일절', kind: 'holiday' });
+  } else if (today === '2026-03-22') {
+    todayNotes.push({ label: '야간당직', kind: 'note' });
+  }
+  document.getElementById('notes-json').value = JSON.stringify(todayNotes);
+
+  renderWidget();
+}
+
+function copyJson() {
+  const text = document.getElementById('cells-json').value;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('JSON이 클립보드에 복사되었습니다!');
+  }).catch(() => {
+    alert('복사 실패 - 수동으로 복사해주세요');
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  초기화
+// ═══════════════════════════════════════════════
+loadSampleData();
+</script>
+</body>
+</html>
