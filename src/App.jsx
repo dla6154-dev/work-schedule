@@ -5123,23 +5123,30 @@ export default function App() {
                       {favoriteDateRows.map((row) => {
                         const isSelected = row.dateStr === selectedDayStr
                         return (
-                        <tr key={`favorite-row-${row.dateStr}`} className={isSelected ? 'bg-indigo-50' : ''}>
+                        <tr
+                          key={`favorite-row-${row.dateStr}`}
+                          className={`cursor-pointer ${isSelected ? 'bg-indigo-100' : 'hover:bg-slate-50'}`}
+                          onClick={() => setSelectedDayStr(row.dateStr)}
+                        >
                           <td
                             className={`sticky left-0 z-20 w-[54px] min-w-[54px] max-w-[54px] px-0.5 py-2 border-b border-r ${
-                              isSelected ? 'bg-indigo-50 border-indigo-100' : 'bg-white border-slate-100'
+                              isSelected ? 'bg-indigo-100 border-indigo-200' : 'bg-white border-slate-100'
                             }`}
                           >
                             <div className="mx-auto w-[2.4ch]">
+                              {isSelected && (
+                                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500 rounded-r" />
+                              )}
                               <p
                                 className={`w-full text-center tabular-nums font-black leading-none ${
-                                  isSelected ? 'text-indigo-600' : row.isHoliday || row.isWeekend ? 'text-rose-500' : 'text-slate-700'
+                                  isSelected ? 'text-indigo-700' : row.isHoliday || row.isWeekend ? 'text-rose-500' : 'text-slate-700'
                                 }`}
                               >
                                 {row.dayLabel}
                               </p>
                               <p
                                 className={`mt-1 w-full text-center text-[9px] font-bold leading-none ${
-                                  isSelected ? 'text-indigo-400' : row.isHoliday || row.isWeekend ? 'text-rose-400' : 'text-slate-400'
+                                  isSelected ? 'text-indigo-500' : row.isHoliday || row.isWeekend ? 'text-rose-400' : 'text-slate-400'
                                 }`}
                               >
                                 {row.weekdayLabel}
@@ -5153,14 +5160,14 @@ export default function App() {
                               <td
                                 key={`favorite-cell-${row.dateStr}-${column.id}`}
                                 className={`px-0.5 py-2 border-b text-center ${
-                                  isSelected ? 'bg-indigo-50 border-indigo-100' : 'bg-white border-slate-100'
+                                  isSelected ? 'bg-indigo-100 border-indigo-200' : 'bg-white border-slate-100'
                                 }`}
                               >
                                 <span
                                   className={`text-[10px] font-black leading-none ${
                                     scheduleType
                                       ? COLOR_OPTIONS[scheduleType.colorIdx % COLOR_OPTIONS.length].text
-                                      : 'text-slate-300'
+                                      : isSelected ? 'text-indigo-300' : 'text-slate-300'
                                   }`}
                                 >
                                   {scheduleType?.label || '-'}
