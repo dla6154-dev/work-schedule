@@ -5120,22 +5120,26 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {favoriteDateRows.map((row) => (
-                        <tr key={`favorite-row-${row.dateStr}`}>
+                      {favoriteDateRows.map((row) => {
+                        const isSelected = row.dateStr === selectedDayStr
+                        return (
+                        <tr key={`favorite-row-${row.dateStr}`} className={isSelected ? 'bg-indigo-50' : ''}>
                           <td
-                            className="sticky left-0 z-20 w-[54px] min-w-[54px] max-w-[54px] px-0.5 py-2 border-b border-r border-slate-100 bg-white"
+                            className={`sticky left-0 z-20 w-[54px] min-w-[54px] max-w-[54px] px-0.5 py-2 border-b border-r ${
+                              isSelected ? 'bg-indigo-50 border-indigo-100' : 'bg-white border-slate-100'
+                            }`}
                           >
                             <div className="mx-auto w-[2.4ch]">
                               <p
                                 className={`w-full text-center tabular-nums font-black leading-none ${
-                                  row.isHoliday || row.isWeekend ? 'text-rose-500' : 'text-slate-700'
+                                  isSelected ? 'text-indigo-600' : row.isHoliday || row.isWeekend ? 'text-rose-500' : 'text-slate-700'
                                 }`}
                               >
                                 {row.dayLabel}
                               </p>
                               <p
                                 className={`mt-1 w-full text-center text-[9px] font-bold leading-none ${
-                                  row.isHoliday || row.isWeekend ? 'text-rose-400' : 'text-slate-400'
+                                  isSelected ? 'text-indigo-400' : row.isHoliday || row.isWeekend ? 'text-rose-400' : 'text-slate-400'
                                 }`}
                               >
                                 {row.weekdayLabel}
@@ -5148,7 +5152,9 @@ export default function App() {
                             return (
                               <td
                                 key={`favorite-cell-${row.dateStr}-${column.id}`}
-                                className="px-0.5 py-2 border-b border-slate-100 text-center bg-white"
+                                className={`px-0.5 py-2 border-b text-center ${
+                                  isSelected ? 'bg-indigo-50 border-indigo-100' : 'bg-white border-slate-100'
+                                }`}
                               >
                                 <span
                                   className={`text-[10px] font-black leading-none ${
@@ -5163,7 +5169,8 @@ export default function App() {
                             )
                           })}
                         </tr>
-                      ))}
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
