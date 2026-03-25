@@ -25,6 +25,7 @@ import {
   subscribeAuth,
   subscribeSharedState,
 } from './lib/supabase'
+import { APP_VERSION } from './version'
 import { syncWidgetSnapshot } from './lib/widgetBridge'
 import {
   checkCalendarPermission,
@@ -1981,6 +1982,8 @@ export default function App() {
   const [spotlightSecondaryTargetRect, setSpotlightSecondaryTargetRect] = useState(null)
   const [spotlightCardTop, setSpotlightCardTop] = useState(null)
 
+  const [updateInfo, setUpdateInfo] = useState(null) // { version, downloadUrl }
+
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [profileNameInput, setProfileNameInput] = useState(profile.name)
   const [profileCenterIdInput, setProfileCenterIdInput] = useState(profile.centerId)
@@ -2895,6 +2898,8 @@ export default function App() {
         triggerSharedResubscribe()
         return
       }
+      // 앱이 백그라운드로 전환될 때 pending 저장을 즉시 flush (재설치 등으로 앱 종료 시 데이터 유실 방지)
+      flushQueuedSharedSave()
       setSharedSubscriptionRevision((prev) => prev + 1)
     }
 
@@ -3342,9 +3347,10 @@ export default function App() {
       return
     }
 
-    const mergedCenters = mergeEntitiesById(centers, localCenters)
-    const mergedDispatchSites = mergeEntitiesById(dispatchSites, localDispatchSites)
-    const mergedWorkTypes = mergeEntitiesById(workTypes, localWorkTypes)
+    const isNotDemo = (item) => !item?.id?.includes('demo')
+    const mergedCenters = mergeEntitiesById(centers, localCenters.filter(isNotDemo))
+    const mergedDispatchSites = mergeEntitiesById(dispatchSites, localDispatchSites.filter(isNotDemo))
+    const mergedWorkTypes = mergeEntitiesById(workTypes, localWorkTypes.filter(isNotDemo))
     const mergedDailyNotes = mergeDailyNotesForMigration(dailyNotes, localDailyNotes)
     const mergedPeriodSchedules = mergePeriodSchedulesForMigration(periodSchedules, localPeriodSchedules)
     const mergedMySchedules = { ...mySchedules, ...localMySchedules }
@@ -3399,6 +3405,20 @@ export default function App() {
     setPeriodLabelInput('')
     setPeriodFormError('')
   }, [selectedDayStr, todayStr])
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/dla6154-dev/work-schedule/releases/latest')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data?.tag_name) return
+        const latest = parseInt(data.tag_name.replace(/[^0-9]/g, ''), 10)
+        if (latest > APP_VERSION) {
+          const asset = data.assets?.find((a) => a.name.endsWith('.apk'))
+          setUpdateInfo({ version: latest, downloadUrl: asset?.browser_download_url || data.html_url })
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (isTutorialDemoMode) return
@@ -5793,6 +5813,31 @@ export default function App() {
                   className="flex-1 py-4 bg-slate-900 text-white font-black rounded-2xl text-xs shadow-lg"
                 >
                   닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {updateInfo ? (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 px-6">
+            <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
+              <div className="px-6 pt-6 pb-5">
+                <p className="text-base font-bold text-slate-800 mb-1">새 버전이 있습니다</p>
+                <p className="text-sm text-slate-500">v{updateInfo.version} 업데이트가 준비됐습니다.</p>
+              </div>
+              <div className="flex border-t border-slate-100">
+                <button
+                  className="flex-1 py-3.5 text-sm text-slate-400 font-medium"
+                  onClick={() => setUpdateInfo(null)}
+                >
+                  나중에
+                </button>
+                <button
+                  className="flex-1 py-3.5 text-sm text-indigo-600 font-bold border-l border-slate-100"
+                  onClick={() => { window.open(updateInfo.downloadUrl, '_blank'); setUpdateInfo(null) }}
+                >
+                  업데이트
                 </button>
               </div>
             </div>
