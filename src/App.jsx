@@ -3407,17 +3407,22 @@ export default function App() {
   }, [selectedDayStr, todayStr])
 
   useEffect(() => {
+    console.log('[UPDATE] 체크 시작, 현재 버전:', APP_VERSION)
     fetch('https://api.github.com/repos/dla6154-dev/work-schedule/releases/latest')
       .then((r) => r.json())
       .then((data) => {
+        console.log('[UPDATE] 응답:', data?.tag_name)
         if (!data?.tag_name) return
         const latest = parseInt(data.tag_name.replace(/[^0-9]/g, ''), 10)
+        console.log('[UPDATE] 최신:', latest, '현재:', APP_VERSION, '업데이트필요:', latest > APP_VERSION)
         if (latest > APP_VERSION) {
           const asset = data.assets?.find((a) => a.name.endsWith('.apk'))
-          setUpdateInfo({ version: latest, downloadUrl: asset?.browser_download_url || data.html_url })
+          const downloadUrl = asset?.browser_download_url || data.html_url
+          console.log('[UPDATE] downloadUrl:', downloadUrl)
+          setUpdateInfo({ version: latest, downloadUrl })
         }
       })
-      .catch(() => {})
+      .catch((e) => console.log('[UPDATE] 오류:', e.message))
   }, [])
 
   useEffect(() => {
@@ -5849,7 +5854,7 @@ export default function App() {
                 </button>
                 <button
                   className="flex-1 py-3.5 text-sm text-indigo-600 font-bold border-l border-slate-100"
-                  onClick={() => { window.open(updateInfo.downloadUrl, '_blank'); setUpdateInfo(null) }}
+                  onClick={() => { location.href = updateInfo.downloadUrl; setUpdateInfo(null) }}
                 >
                   업데이트
                 </button>
