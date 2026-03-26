@@ -39,6 +39,11 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Setup debug keystore
+        run: |
+          mkdir -p $HOME/.android
+          echo "${{ secrets.DEBUG_KEYSTORE_BASE64 }}" | base64 -d > $HOME/.android/debug.keystore
+
       - name: Build APK
         run: |
           cd android
