@@ -3520,6 +3520,8 @@ export default function App() {
 
   // 캘린더 이벤트 fetch 함수 (ref로 관리해 visibilitychange에서도 호출 가능)
   const fetchCalendarEventsRef = useRef(null)
+  const calSwipeTouchStartXRef = useRef(null)
+  const calSwipeTouchStartYRef = useRef(null)
   useEffect(() => {
     const pad = (n) => String(n).padStart(2, '0')
     const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
@@ -4888,6 +4890,20 @@ export default function App() {
               <div
                 className="border border-slate-300 rounded-xl overflow-hidden bg-white shadow-sm"
                 data-tour-id="tour-calendar-grid"
+                onTouchStart={(e) => {
+                  calSwipeTouchStartXRef.current = e.touches[0].clientX
+                  calSwipeTouchStartYRef.current = e.touches[0].clientY
+                }}
+                onTouchEnd={(e) => {
+                  if (calSwipeTouchStartXRef.current === null) return
+                  const dx = e.changedTouches[0].clientX - calSwipeTouchStartXRef.current
+                  const dy = e.changedTouches[0].clientY - calSwipeTouchStartYRef.current
+                  calSwipeTouchStartXRef.current = null
+                  calSwipeTouchStartYRef.current = null
+                  if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return
+                  if (dx < 0) setCurrentDate(new Date(year, month + 1, 1))
+                  else setCurrentDate(new Date(year, month - 1, 1))
+                }}
               >
                 <div className="grid grid-cols-7 border-b border-slate-200">
                   {DAY_LABELS.map((day, index) => (
