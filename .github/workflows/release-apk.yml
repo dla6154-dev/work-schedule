@@ -39,16 +39,25 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Setup debug keystore
-        run: |
-          mkdir -p $HOME/.android
-          echo "${{ secrets.DEBUG_KEYSTORE_BASE64 }}" | base64 -d > $HOME/.android/debug.keystore
-
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
+
+      - name: Sign APK
+        run: |
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > /tmp/release.keystore
+          BUILD_TOOLS=$(ls $ANDROID_HOME/build-tools | sort -V | tail -1)
+          $ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner sign \
+            --ks /tmp/release.keystore \
+            --ks-key-alias ${{ secrets.RELEASE_KEY_ALIAS }} \
+            --ks-pass pass:${{ secrets.RELEASE_KEY_PASSWORD }} \
+            --key-pass pass:${{ secrets.RELEASE_KEY_PASSWORD }} \
+            --out android/app/build/outputs/apk/debug/app-debug-signed.apk \
+            android/app/build/outputs/apk/debug/app-debug.apk
+          mv android/app/build/outputs/apk/debug/app-debug-signed.apk \
+             android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Get versionCode
         id: ver
