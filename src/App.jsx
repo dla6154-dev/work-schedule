@@ -445,6 +445,7 @@ const mergeDailyNotesForMigration = (baseDailyNotes = {}, localDailyNotes = {}) 
     localNotes.forEach((note, idx) => {
       const normalized = normalizeDailyNoteEntry(note, `migrate-note-${dateStr}-${idx}`)
       if (!normalized) return
+      if (normalized.id && normalized.id.includes('demo')) return
       const noteKey = `${normalized.centerId}::${normalized.text}`
       if (seenNoteKeys.has(noteKey)) return
       seenNoteKeys.add(noteKey)
@@ -476,6 +477,7 @@ const mergePeriodSchedulesForMigration = (baseSchedules = [], localSchedules = [
   ;(Array.isArray(localSchedules) ? localSchedules : []).forEach((item) => {
     if (!item || typeof item !== 'object') return
     if (typeof item.id !== 'string' || !item.id) return
+    if (item.id.includes('demo')) return
     if (!isYmdDateString(item.startDate) || !isYmdDateString(item.endDate)) return
     if (typeof item.label !== 'string' || !item.label.trim()) return
 
