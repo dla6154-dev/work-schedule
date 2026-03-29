@@ -30,6 +30,7 @@ import { APP_VERSION } from './version'
 import { syncWidgetSnapshot } from './lib/widgetBridge'
 import html2canvas from 'html2canvas'
 import { Share } from '@capacitor/share'
+import { Filesystem, Directory } from '@capacitor/filesystem'
 import {
   checkCalendarPermission,
   getCalendarEventsRange,
@@ -3527,8 +3528,11 @@ export default function App() {
   const calSwipeTouchStartYRef = useRef(null)
   const calendarCaptureRef = useRef(null)
 
+  const [isCapturing, setIsCapturing] = useState(false)
+
   const handleCalendarCapture = async () => {
-    if (!calendarCaptureRef.current) return
+    if (!calendarCaptureRef.current || isCapturing) return
+    setIsCapturing(true)
     try {
       const canvas = await html2canvas(calendarCaptureRef.current, {
         backgroundColor: '#ffffff',
@@ -3538,14 +3542,25 @@ export default function App() {
       })
       const dataUrl = canvas.toDataURL('image/png')
       const base64 = dataUrl.split(',')[1]
+      const fileName = `근무표_${monthName.replace(/\s/g, '_')}_${Date.now()}.png`
+      // 캐시 디렉토리에 파일 저장
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64,
+        directory: Directory.Cache,
+      })
+      // 파일 URI로 공유 시트 열기
       await Share.share({
         title: `${monthName} 근무표`,
-        text: `${monthName} 근무표`,
-        url: `data:image/png;base64,${base64}`,
+        files: [savedFile.uri],
         dialogTitle: '근무표 공유',
       })
+      // 공유 완료 후 임시 파일 삭제
+      await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache }).catch(() => {})
     } catch (e) {
-      // Share 취소 또는 오류 무시
+      // 취소 또는 오류 무시
+    } finally {
+      setIsCapturing(false)
     }
   }
   useEffect(() => {
@@ -4898,7 +4913,10 @@ export default function App() {
             <button
               type="button"
               onClick={handleCalendarCapture}
-              className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0"
+              disabled={isCapturing}
+              className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+                isCapturing ? 'bg-indigo-100 text-indigo-500 scale-90' : 'bg-slate-100 text-slate-600'
+              }`}
               aria-label="달력 캡처 공유"
             >
               <Camera size={18} />
@@ -4924,7 +4942,6 @@ export default function App() {
           {activeSection === MAIN_SECTION_ID ? (
             <>
               <div
-                ref={calendarCaptureRef}
                 className="border border-slate-300 rounded-xl overflow-hidden bg-white shadow-sm"
                 data-tour-id="tour-calendar-grid"
                 onTouchStart={(e) => {
@@ -4942,6 +4959,7 @@ export default function App() {
                   else setCurrentDate(new Date(year, month - 1, 1))
                 }}
               >
+                <div ref={calendarCaptureRef}>
                 <div className="grid grid-cols-7 border-b border-slate-200">
                   {DAY_LABELS.map((day, index) => (
                     <div
@@ -5112,6 +5130,7 @@ export default function App() {
                     })}
                   </div>
                 ))}
+                </div>{/* calendarCaptureRef 닫기 */}
               </div>
 
               {isRegistrationMode ? (

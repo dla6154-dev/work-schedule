@@ -15,6 +15,7 @@
   "dependencies": {
     "@capacitor/android": "^8.2.0",
     "@capacitor/core": "^8.2.0",
+    "@capacitor/filesystem": "^8.1.2",
     "@capacitor/share": "^8.0.1",
     "@supabase/supabase-js": "^2.49.0",
     "html2canvas": "^1.4.1",
