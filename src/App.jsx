@@ -4977,7 +4977,7 @@ export default function App() {
                   else setCurrentDate(new Date(year, month - 1, 1))
                 }}
               >
-                <div ref={calendarCaptureRef}>
+                <div ref={calendarCaptureRef} style={{ paddingBottom: '8px', backgroundColor: '#ffffff' }}>
                 <div className="grid grid-cols-7 border-b border-slate-200">
                   {DAY_LABELS.map((day, index) => (
                     <div
@@ -5112,7 +5112,7 @@ export default function App() {
                             ) : null}
                           </div>
 
-                          <div className="relative z-[2] mt-auto h-[32px] shrink-0 flex flex-col gap-[2px]">
+                          <div className="relative z-[2] mt-auto h-[34px] shrink-0 flex flex-col gap-[2px] pb-[2px]">
                             {dayNoteItems.slice(0, 2).map((item) => {
                               return (
                                 <div
