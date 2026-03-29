@@ -64,13 +64,12 @@ jobs:
         run: |
           CODE=$(grep 'versionCode' android/app/build.gradle | grep -o '[0-9]\+')
           echo "code=$CODE" >> $GITHUB_OUTPUT
-          APK_NAME=$(python3 scripts/rename_apk.py "$CODE")
-          echo "apk_name=${APK_NAME}" >> $GITHUB_OUTPUT
+          python3 scripts/rename_apk.py "$CODE"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.ver.outputs.code }}
           name: v${{ steps.ver.outputs.code }}
-          files: ${{ steps.ver.outputs.apk_name }}
+          files: android/app/build/outputs/apk/debug/V*.apk
           token: ${{ secrets.GITHUB_TOKEN }}
