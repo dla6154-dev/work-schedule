@@ -2,6 +2,7 @@
 import {
   ArrowRightCircle,
   CalendarDays,
+  Camera,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -27,6 +28,8 @@ import {
 } from './lib/supabase'
 import { APP_VERSION } from './version'
 import { syncWidgetSnapshot } from './lib/widgetBridge'
+import html2canvas from 'html2canvas'
+import { Share } from '@capacitor/share'
 import {
   checkCalendarPermission,
   getCalendarEventsRange,
@@ -3522,6 +3525,29 @@ export default function App() {
   const fetchCalendarEventsRef = useRef(null)
   const calSwipeTouchStartXRef = useRef(null)
   const calSwipeTouchStartYRef = useRef(null)
+  const calendarCaptureRef = useRef(null)
+
+  const handleCalendarCapture = async () => {
+    if (!calendarCaptureRef.current) return
+    try {
+      const canvas = await html2canvas(calendarCaptureRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      })
+      const dataUrl = canvas.toDataURL('image/png')
+      const base64 = dataUrl.split(',')[1]
+      await Share.share({
+        title: `${monthName} 근무표`,
+        text: `${monthName} 근무표`,
+        url: `data:image/png;base64,${base64}`,
+        dialogTitle: '근무표 공유',
+      })
+    } catch (e) {
+      // Share 취소 또는 오류 무시
+    }
+  }
   useEffect(() => {
     const pad = (n) => String(n).padStart(2, '0')
     const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
@@ -4846,26 +4872,36 @@ export default function App() {
             </div>
           </div>
 
-          <div
-            className="flex items-center justify-between bg-slate-100 p-1.5 rounded-2xl"
-            data-tour-id="tour-month-navigation"
-          >
+          <div className="flex items-center gap-2">
+            <div
+              className="flex-1 flex items-center justify-between bg-slate-100 p-1.5 rounded-2xl"
+              data-tour-id="tour-month-navigation"
+            >
+              <button
+                type="button"
+                onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
+                className="p-2 text-slate-600"
+                aria-label="이전 달"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <span className="font-black text-slate-700">{monthName}</span>
+              <button
+                type="button"
+                onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
+                className="p-2 text-slate-600"
+                aria-label="다음 달"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
             <button
               type="button"
-              onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
-              className="p-2 text-slate-600"
-              aria-label="이전 달"
+              onClick={handleCalendarCapture}
+              className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0"
+              aria-label="달력 캡처 공유"
             >
-              <ChevronLeft size={20} />
-            </button>
-            <span className="font-black text-slate-700">{monthName}</span>
-            <button
-              type="button"
-              onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
-              className="p-2 text-slate-600"
-              aria-label="다음 달"
-            >
-              <ChevronRight size={20} />
+              <Camera size={18} />
             </button>
           </div>
         </header>
@@ -4888,6 +4924,7 @@ export default function App() {
           {activeSection === MAIN_SECTION_ID ? (
             <>
               <div
+                ref={calendarCaptureRef}
                 className="border border-slate-300 rounded-xl overflow-hidden bg-white shadow-sm"
                 data-tour-id="tour-calendar-grid"
                 onTouchStart={(e) => {
@@ -5030,7 +5067,7 @@ export default function App() {
                           <div className="relative z-[2] mt-2 h-6 shrink-0 flex items-center justify-center">
                             {myType ? (
                               <p
-                                className={`w-full text-center text-[10px] leading-none font-black truncate ${
+                                className={`w-full text-center text-[10px] leading-tight font-black truncate ${
                                   cell.isCurrentMonth ? COLOR_OPTIONS[myType.colorIdx].text : 'text-slate-300'
                                 }`}
                               >

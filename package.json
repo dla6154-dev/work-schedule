@@ -15,7 +15,9 @@
   "dependencies": {
     "@capacitor/android": "^8.2.0",
     "@capacitor/core": "^8.2.0",
+    "@capacitor/share": "^8.0.1",
     "@supabase/supabase-js": "^2.49.0",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.577.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
