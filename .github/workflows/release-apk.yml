@@ -73,3 +73,8 @@ jobs:
           name: v${{ steps.ver.outputs.code }}
           files: android/app/build/outputs/apk/debug/V*.apk
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rename asset to Korean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/rename_release_asset.py ${{ steps.ver.outputs.code }}
