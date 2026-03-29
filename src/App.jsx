@@ -31,6 +31,7 @@ import { syncWidgetSnapshot } from './lib/widgetBridge'
 import html2canvas from 'html2canvas'
 import { Share } from '@capacitor/share'
 import { Filesystem, Directory } from '@capacitor/filesystem'
+import { CapacitorHttp } from '@capacitor/core'
 import {
   checkCalendarPermission,
   getCalendarEventsRange,
@@ -3415,22 +3416,21 @@ export default function App() {
   }, [selectedDayStr, todayStr])
 
   useEffect(() => {
-    console.log('[UPDATE] 체크 시작, 현재 버전:', APP_VERSION)
-    fetch('https://api.github.com/repos/dla6154-dev/work-schedule/releases/latest')
-      .then((r) => r.json())
-      .then((data) => {
-        console.log('[UPDATE] 응답:', data?.tag_name)
+    CapacitorHttp.get({
+      url: 'https://api.github.com/repos/dla6154-dev/work-schedule/releases/latest',
+      headers: { 'Accept': 'application/vnd.github.v3+json' },
+    })
+      .then((res) => {
+        const data = res.data
         if (!data?.tag_name) return
         const latest = parseInt(data.tag_name.replace(/[^0-9]/g, ''), 10)
-        console.log('[UPDATE] 최신:', latest, '현재:', APP_VERSION, '업데이트필요:', latest > APP_VERSION)
         if (latest > APP_VERSION) {
           const asset = data.assets?.find((a) => a.name.endsWith('.apk'))
           const downloadUrl = asset?.browser_download_url || data.html_url
-          console.log('[UPDATE] downloadUrl:', downloadUrl)
           setUpdateInfo({ version: latest, downloadUrl })
         }
       })
-      .catch((e) => console.log('[UPDATE] 오류:', e.message))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -3550,6 +3550,16 @@ export default function App() {
         height: fullHeight,
         windowWidth: fullWidth,
         windowHeight: fullHeight,
+        onclone: (clonedDoc) => {
+          clonedDoc.querySelectorAll('*').forEach((node) => {
+            const s = node.style
+            s.overflow = 'visible'
+            s.overflowX = 'visible'
+            s.overflowY = 'visible'
+            s.textOverflow = 'clip'
+            s.whiteSpace = 'normal'
+          })
+        },
       })
       const dataUrl = canvas.toDataURL('image/png')
       const base64 = dataUrl.split(',')[1]
