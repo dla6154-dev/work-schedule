@@ -3535,18 +3535,8 @@ export default function App() {
     setIsCapturing(true)
     try {
       const el = calendarCaptureRef.current
-      // overflow:hidden 요소 임시 해제 (텍스트 잘림 방지)
-      const overflowEls = el.querySelectorAll('*')
-      const origOverflows = []
-      overflowEls.forEach((node) => {
-        const s = window.getComputedStyle(node)
-        if (s.overflow === 'hidden' || s.overflowX === 'hidden' || s.overflowY === 'hidden') {
-          origOverflows.push({ node, overflow: node.style.overflow, overflowX: node.style.overflowX, overflowY: node.style.overflowY })
-          node.style.overflow = 'visible'
-          node.style.overflowX = 'visible'
-          node.style.overflowY = 'visible'
-        }
-      })
+      const fullHeight = el.scrollHeight + 16
+      const fullWidth = el.scrollWidth
       const canvas = await html2canvas(el, {
         backgroundColor: '#ffffff',
         scale: 3,
@@ -3554,12 +3544,10 @@ export default function App() {
         logging: false,
         allowTaint: true,
         foreignObjectRendering: false,
-      })
-      // overflow 원복
-      origOverflows.forEach(({ node, overflow, overflowX, overflowY }) => {
-        node.style.overflow = overflow
-        node.style.overflowX = overflowX
-        node.style.overflowY = overflowY
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
       })
       const dataUrl = canvas.toDataURL('image/png')
       const base64 = dataUrl.split(',')[1]
