@@ -2019,7 +2019,9 @@ export default function App() {
   const [dispatchFormError, setDispatchFormError] = useState('')
   const [dailyNotes, setDailyNotes] = useState(initialAppState?.dailyNotes ?? {})
   const [calendarEventsByDate, setCalendarEventsByDate] = useState({})
-  const [calendarPermissionGranted, setCalendarPermissionGranted] = useState(false)
+  const [calendarPermissionGranted, setCalendarPermissionGranted] = useState(
+    () => localStorage.getItem('calendarPermissionGranted') === 'true'
+  )
   const [dayNoteInput, setDayNoteInput] = useState('')
   const [dayNoteError, setDayNoteError] = useState('')
   const [periodSchedules, setPeriodSchedules] = useState(initialAppState?.periodSchedules ?? [])
@@ -3580,6 +3582,7 @@ export default function App() {
         granted = await checkCalendarPermission()
         if (!granted) granted = await requestCalendarPermission()
         setCalendarPermissionGranted(granted)
+        if (granted) localStorage.setItem('calendarPermissionGranted', 'true')
       }
       if (!granted) return
 
