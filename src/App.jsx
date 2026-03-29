@@ -2,7 +2,6 @@
 import {
   ArrowRightCircle,
   CalendarDays,
-  Camera,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -12,6 +11,7 @@ import {
   Pencil,
   Plus,
   Settings,
+  Share2,
   Star,
   Trash2,
   User,
@@ -3534,28 +3534,34 @@ export default function App() {
     if (!calendarCaptureRef.current || isCapturing) return
     setIsCapturing(true)
     try {
-      const canvas = await html2canvas(calendarCaptureRef.current, {
+      const el = calendarCaptureRef.current
+      const canvas = await html2canvas(el, {
         backgroundColor: '#ffffff',
-        scale: 2,
+        scale: window.devicePixelRatio * 2,
         useCORS: true,
         logging: false,
+        width: el.offsetWidth,
+        height: el.offsetHeight,
+        windowWidth: el.offsetWidth,
+        windowHeight: el.offsetHeight,
+        scrollX: 0,
+        scrollY: 0,
+        allowTaint: true,
+        foreignObjectRendering: false,
       })
       const dataUrl = canvas.toDataURL('image/png')
       const base64 = dataUrl.split(',')[1]
-      const fileName = `근무표_${monthName.replace(/\s/g, '_')}_${Date.now()}.png`
-      // 캐시 디렉토리에 파일 저장
+      const fileName = `근무편성_${monthName.replace(/\s/g, '')}.png`
       const savedFile = await Filesystem.writeFile({
         path: fileName,
         data: base64,
         directory: Directory.Cache,
       })
-      // 파일 URI로 공유 시트 열기
       await Share.share({
-        title: `${monthName} 근무표`,
+        title: `${monthName} 근무편성`,
         files: [savedFile.uri],
-        dialogTitle: '근무표 공유',
+        dialogTitle: '근무편성 공유',
       })
-      // 공유 완료 후 임시 파일 삭제
       await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache }).catch(() => {})
     } catch (e) {
       // 취소 또는 오류 무시
@@ -4919,7 +4925,7 @@ export default function App() {
               }`}
               aria-label="달력 캡처 공유"
             >
-              <Camera size={18} />
+              <Share2 size={18} />
             </button>
           </div>
         </header>
